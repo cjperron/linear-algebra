@@ -7,19 +7,23 @@
 int main(int argc, char *argv[]) {
 
     linvector vec = linvector_new(3, 1.0, 2.0, 3.0);
+    printf("vec: ");
     linvector_print(&vec, 3);
     printf("\n");
 
     linvector vec2 = linvector_new(3, 4.0, 5.0, 6.0);
+    printf("vec2: ");
     linvector_print(&vec2, 3);
 
     printf("\n");
 
     linvector vec3 = linvector_add(&vec, &vec2);
+    printf("vec3: ");
     linvector_print(&vec3, 3);
     printf("\n");
     
     linvector vec4 = linvector_sub(&vec, &vec2);
+    printf("vec4: ");
     linvector_print(&vec4, 3);
     printf("\n");
 
