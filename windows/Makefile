@@ -3,10 +3,10 @@ CFLAGS = -Wall -Wextra -Ilib -MMD -MP
 LDFLAGS = -Llib
 LDLIBS = -lm -lquadmath
 
-SRC_DIR = src
-TESTS_DIR = tests
+SRC_DIR = ../src
+TESTS_DIR = ../tests
 BIN_DIR = bin
-LIB_DIR = lib
+LIB_DIR = ../lib
 
 SRCS = $(wildcard $(SRC_DIR)/*.c)
 TEST_SRCS = $(wildcard $(TESTS_DIR)/*.c)

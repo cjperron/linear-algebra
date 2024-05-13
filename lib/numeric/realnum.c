@@ -38,43 +38,29 @@
  */
 #include"realnum.h"
 
-realnum* realnum_new() {
-    realnum* num = malloc(sizeof(realnum));
-    num->kind = REALNUM_FRAC;
-    num->value.frac.num = 0;
-    num->value.frac.den = 1;
+#define BUF_SIZE 128
+
+realnum realnum_new() {
+    realnum num;
+    num.kind = REALNUM_FRAC;
+    num.value.frac.num = 0;
+    num.value.frac.den = 1;
     return num;
 }
 
-realnum* realnum_from_frac(int64_t num, int64_t den) {
-    realnum* frac = malloc(sizeof(realnum));
-    frac->kind = REALNUM_FRAC;
-    frac->value.frac.num = num;
-    frac->value.frac.den = den;
+realnum realnum_from_frac(int64_t num, int64_t den) {
+    realnum frac;
+    frac.kind = REALNUM_FRAC;
+    frac.value.frac.num = num;
+    frac.value.frac.den = den;
     return frac;
 }
 
-realnum* realnum_from_aprox(__float128 aprox) {
-    realnum* num = malloc(sizeof(realnum));
-    num->kind = REALNUM_APROX;
-    num->value.aprox = aprox;
+realnum realnum_from_aprox(__float128 aprox) {
+    realnum num;
+    num.kind = REALNUM_APROX;
+    num.value.aprox = aprox;
     return num;
-}
-
-realnum* realnum_clone(realnum* num) {
-    realnum* clone = malloc(sizeof(realnum));
-    clone->kind = num->kind;
-    if (num->kind == REALNUM_FRAC) {
-        clone->value.frac.num = num->value.frac.num;
-        clone->value.frac.den = num->value.frac.den;
-    } else {
-        clone->value.aprox = num->value.aprox;
-    }
-    return clone;
-}
-
-void realnum_free(realnum* num) {
-    free(num);
 }
 
 realnum realnum_add(realnum* a, realnum* b) {
@@ -267,39 +253,43 @@ realnum realnum_fracsimp(realnum* num) {
     return result;
 }
 
-realnum* apply_op(realnum* a, realnum* b, realnum* (*op)(realnum*, realnum*)) {
+realnum apply_op(realnum* a, realnum* b, realnum (*op)(realnum*, realnum*)) {
     return op(a, b);
 }
 
-void realnum_print(realnum* num) {
+void realnum_print(realnum* num, uint16_t precision) {
     if (num->kind == REALNUM_FRAC) {
-        printf("%lld/%lld", num->value.frac.num, num->value.frac.den);
+        printf("%ld/%ld", num->value.frac.num, num->value.frac.den);
     } else {
-        char buf[127];
-        quadmath_snprintf (buf, sizeof buf, "%.36Qf", num->value);
+        char buf[BUF_SIZE];
+        quadmath_snprintf (buf, sizeof buf, "%.*Qf", precision, num->value.aprox);
         printf("%s", buf);
     }
 }
 
-void realnum_println(realnum* num) {
-    realnum_print(num);
+void realnum_println(realnum* num, uint16_t precision) {
+    realnum_print(num, precision);
     printf("\n");
 }
 
 void realnum_print_as_frac(realnum* num) {
     if (num->kind == REALNUM_FRAC) {
-        printf("%lld/%lld", num->value.frac.num, num->value.frac.den);
+        printf("%ld/%ld", num->value.frac.num, num->value.frac.den);
     } else {
         realnum frac = realnum_as_frac(num);
         realnum_print_as_frac(&frac);
     }
 }
 
-void realnum_print_as_aprox(realnum* num) {
+void realnum_print_as_aprox(realnum* num, uint16_t precision) {
     if (num->kind == REALNUM_FRAC) {
         realnum aprox = realnum_as_aprox(num);
-        realnum_print_as_aprox(&aprox);
+        realnum_print_as_aprox(&aprox, precision);
     } else {
-        printf("%.36Qf", num->value.aprox);
+        char buf[BUF_SIZE];
+        quadmath_snprintf (buf, sizeof buf, "%.*Qf", precision, num->value.aprox);
+        printf("%s", buf);
     }
 }
+
+#undef BUF_SIZE

@@ -33,7 +33,7 @@ typedef struct realnum {
  *
  * @return A pointer to the newly created realnum object.
  */
-realnum* realnum_new();
+realnum realnum_new();
 
 /**
  * Creates a new realnum object from a fraction.
@@ -42,7 +42,7 @@ realnum* realnum_new();
  * @param den The denominator of the fraction.
  * @return A pointer to the newly created realnum object.
  */
-realnum* realnum_from_frac(int64_t num, int64_t den);
+realnum realnum_from_frac(int64_t num, int64_t den);
 
 /**
  * Creates a new realnum object from an approximate value.
@@ -50,15 +50,7 @@ realnum* realnum_from_frac(int64_t num, int64_t den);
  * @param aprox The approximate value.
  * @return A pointer to the newly created realnum object.
  */
-realnum* realnum_from_aprox(__float128 aprox);
-
-/**
- * Creates a clone of a realnum object.
- *
- * @param num The realnum object to clone.
- * @return A pointer to the cloned realnum object.
- */
-realnum* realnum_clone(realnum* num);
+realnum realnum_from_aprox(__float128 aprox);
 
 /**
  * Allocates memory for a realnum object.
@@ -66,7 +58,7 @@ realnum* realnum_clone(realnum* num);
  * @param num The realnum object to allocate memory for.
  * @return A pointer to the allocated realnum object.
  */
-realnum* realnum_allocate(realnum* num);
+realnum realnum_allocate(realnum* num);
 
 /**
  * Frees the memory allocated for a realnum object.
@@ -200,21 +192,23 @@ realnum realnum_fracsimp(realnum* num);
  * @param op The binary operation to apply.
  * @return The result of applying the binary operation to the two realnum objects.
  */
-realnum* apply_op(realnum* a, realnum* b, realnum* (*op)(realnum*, realnum*));
+realnum apply_op(realnum* a, realnum* b, realnum (*op)(realnum*, realnum*));
 
 /**
  * Prints a realnum object.
  *
  * @param num The realnum object to print.
+ * @param precision The number of decimal places to print.
  */
-void realnum_print(realnum* num);
+void realnum_print(realnum* num, uint16_t precision);
 
 /**
  * Prints a realnum object followed by a newline character.
  *
  * @param num The realnum object to print.
+ * @param precision The number of decimal places to print.
  */
-void realnum_println(realnum* num);
+void realnum_println(realnum* num, uint16_t precision);
 
 /**
  * Prints a realnum object as a fraction.
@@ -227,5 +221,6 @@ void realnum_print_as_frac(realnum* num);
  * Prints a realnum object as an approximate value.
  *
  * @param num The realnum object to print as an approximate value.
+ * @param precision The number of decimal places to print.
  */
-void realnum_print_as_aprox(realnum* num);
+void realnum_print_as_aprox(realnum* num, uint16_t precision);
