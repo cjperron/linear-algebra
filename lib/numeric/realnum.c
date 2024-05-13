@@ -159,11 +159,11 @@ realnum realnum_abs(realnum* num) {
     realnum result;
     if (num->kind == REALNUM_FRAC) {
         result.kind = REALNUM_FRAC;
-        result.value.frac.num = llabs(num->value.frac.num);
+        result.value.frac.num = num->value.frac.num < 0 ? -num->value.frac.num : num->value.frac.num;
         result.value.frac.den = num->value.frac.den;
     } else {
         result.kind = REALNUM_APROX;
-        result.value.aprox = fabsl(num->value.aprox);
+        result.value.aprox = num->value.aprox < 0 ? -num->value.aprox : num->value.aprox;
     }
     return result;
 }
@@ -275,7 +275,9 @@ void realnum_print(realnum* num) {
     if (num->kind == REALNUM_FRAC) {
         printf("%lld/%lld", num->value.frac.num, num->value.frac.den);
     } else {
-        printf("%.36Qf", num->value.aprox);
+        char buf[127];
+        quadmath_snprintf (buf, sizeof buf, "%.36Qf", num->value);
+        printf("%s", buf);
     }
 }
 
