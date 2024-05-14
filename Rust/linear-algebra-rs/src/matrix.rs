@@ -16,6 +16,7 @@ pub enum MatrixError {
 }
 
 #[derive(Debug, PartialEq, Clone)]
+/// Represents a linear algebra Matrix.
 pub struct LinMatrix {
     rows: usize,
     cols: usize,
@@ -23,6 +24,16 @@ pub struct LinMatrix {
 }
 
 impl LinMatrix {
+    /// Creates a new `LinMatrix` with the specified number of rows and columns.
+    ///
+    /// # Arguments
+    ///
+    /// * `rows` - The number of rows in the matrix.
+    /// * `cols` - The number of columns in the matrix.
+    ///
+    /// # Returns
+    ///
+    /// A new `LinMatrix` with the specified dimensions, initialized with zeros.
     pub fn new(rows: usize, cols: usize) -> LinMatrix {
         LinMatrix {
             rows,
@@ -31,6 +42,19 @@ impl LinMatrix {
         }
     }
 
+    /// Creates a new `LinMatrix` from a 2D slice of `LinNum` values.
+    ///
+    /// # Arguments
+    ///
+    /// * `data` - The 2D slice of `LinNum` values representing the matrix.
+    ///
+    /// # Returns
+    ///
+    /// A new `LinMatrix` initialized with the values from the 2D slice.
+    ///
+    /// # Panics
+    ///
+    /// This function panics if the input slice is empty or if the rows have different lengths.
     pub fn from(data: &[&[LinNum]]) -> LinMatrix {
         let rows = data.len();
         let cols = data[0].len();
@@ -43,18 +67,41 @@ impl LinMatrix {
         matrix
     }
 
+    /// Returns the dimensions of the matrix as a tuple `(rows, cols)`.
     pub fn dim(&self) -> (usize, usize) {
         (self.rows, self.cols)
     }
 
+    /// Returns the value at the specified row and column in the matrix.
+    ///
+    /// # Arguments
+    ///
+    /// * `row` - The row index.
+    /// * `col` - The column index.
+    ///
+    /// # Returns
+    ///
+    /// The value at the specified position in the matrix.
     pub fn get(&self, row: usize, col: usize) -> LinNum {
         self.data[row * self.cols + col]
     }
 
+    /// Sets the value at the specified row and column in the matrix.
+    ///
+    /// # Arguments
+    ///
+    /// * `row` - The row index.
+    /// * `col` - The column index.
+    /// * `value` - The value to set.
     pub fn set(&mut self, row: usize, col: usize, value: LinNum) {
         self.data[row * self.cols + col] = value;
     }
 
+    /// Returns the transpose of the matrix.
+    ///
+    /// # Returns
+    ///
+    /// The transpose of the matrix.
     pub fn transpose(&self) -> LinMatrix {
         let mut result = LinMatrix::new(self.cols, self.rows);
         for i in 0..self.rows {
@@ -63,6 +110,43 @@ impl LinMatrix {
             }
         }
         result
+    }
+
+    /// Calculates the determinant of the matrix.
+    ///
+    /// # Returns
+    ///
+    /// - `Ok(det)` if the matrix is square and the determinant can be calculated.
+    /// - `Err(MatrixError::DimensionMismatch)` if the matrix is not square.
+    pub fn determinant(&self) -> Result<LinNum, MatrixError> {
+        if self.rows != self.cols {
+            return Err(MatrixError::DimensionMismatch);
+        }
+        if self.rows == 1 {
+            return Ok(self.get(0, 0));
+        }
+
+        let mut det = LinNum::new_real(0.0);
+        
+        if self.rows == 2 {
+            return Ok(self[(0, 0)] * self[(1, 1)] - self[(0, 1)] * self[(1, 0)]);
+        }
+        
+        for i in 0..self.cols {
+            let mut sub_matrix = LinMatrix::new(self.rows - 1, self.cols - 1); // 1 dim less
+            for j in 1..self.rows {
+                for k in 0..self.cols {
+                    if k < i {
+                        sub_matrix.set(j - 1, k, self.get(j, k));
+                    } else if k > i {
+                        sub_matrix.set(j - 1, k - 1, self.get(j, k));
+                    }
+                }
+            }
+            let sign = if i % 2 == 0 { 1.0 } else { -1.0 };
+            det += self.get(0, i) * sub_matrix.determinant()? * lnum!(sign);
+        }
+        Ok(det)
     }
 }
 
@@ -81,21 +165,26 @@ impl IndexMut<(usize, usize)> for LinMatrix {
 }
 
 impl Add for LinMatrix {
-    type Output = LinMatrix;
-
-    fn add(self, other: LinMatrix) -> LinMatrix {
+    type Output = Result<LinMatrix, MatrixError>;
+    fn add(self, other: LinMatrix) -> Result<LinMatrix, MatrixError> {
+        if self.rows != other.rows || self.cols != other.cols {
+            return Err(MatrixError::DimensionMismatch);
+        }
         let mut result = LinMatrix::new(self.rows, self.cols);
         for i in 0..self.rows {
             for j in 0..self.cols {
                 result.set(i, j, self.get(i, j) + other.get(i, j));
             }
         }
-        result
+        Ok(result)
     }
 }
 
 impl AddAssign for LinMatrix {
     fn add_assign(&mut self, other: LinMatrix) {
+        if other.rows != self.rows || other.cols != self.cols {
+            panic!("Dimension mismatch"); //TODO: handle error
+        }
         for i in 0..self.rows {
             for j in 0..self.cols {
                 self.set(i, j, self.get(i, j) + other.get(i, j));
@@ -105,21 +194,26 @@ impl AddAssign for LinMatrix {
 }
 
 impl Sub for LinMatrix {
-    type Output = LinMatrix;
-
-    fn sub(self, other: LinMatrix) -> LinMatrix {
+    type Output = Result<LinMatrix, MatrixError>;
+    fn sub(self, other: LinMatrix) -> Result<LinMatrix, MatrixError> {
+        if self.rows != other.rows || self.cols != other.cols {
+            return Err(MatrixError::DimensionMismatch);
+        }
         let mut result = LinMatrix::new(self.rows, self.cols);
         for i in 0..self.rows {
             for j in 0..self.cols {
                 result.set(i, j, self.get(i, j) - other.get(i, j));
             }
         }
-        result
+        Ok(result)
     }
 }
 
 impl SubAssign for LinMatrix {
     fn sub_assign(&mut self, other: LinMatrix) {
+        if other.rows != self.rows || other.cols != self.cols {
+            panic!("Dimension mismatch"); //TODO: handle error
+        }
         for i in 0..self.rows {
             for j in 0..self.cols {
                 self.set(i, j, self.get(i, j) - other.get(i, j));
@@ -229,7 +323,7 @@ mod tests {
         let matrix1 = matrix!([1.0, 2.0], [3.0, 4.0]);
         let matrix2 = matrix!([5.0, 6.0], [7.0, 8.0]);
         let result = matrix1 + matrix2;
-        assert_eq!(result, matrix!([6.0, 8.0], [10.0, 12.0]));
+        assert_eq!(result, Ok(matrix!([6.0,8.0],[10.0,12.0])));
     }
 
     #[test]
@@ -237,7 +331,7 @@ mod tests {
         let matrix1 = matrix!([1.0, 2.0], [3.0, 4.0]);
         let matrix2 = matrix!([5.0, 6.0], [7.0, 8.0]);
         let result = matrix1 - matrix2;
-        assert_eq!(result, matrix!([-4.0, -4.0], [-4.0, -4.0]));
+        assert_eq!(result, Ok(matrix!([-4.0, -4.0],[-4.0, -4.0])));
     }
 
     #[test]
