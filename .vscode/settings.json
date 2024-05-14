@@ -13,5 +13,8 @@
         "ranges": "c",
         "span": "c",
         "vector.h": "c"
-    }
+    },
+    "rust-analyzer.linkedProjects": [
+        "./Rust/linear-algebra-rs/Cargo.toml",
+    ]
 }
